@@ -4,7 +4,6 @@
 #include <stdbool.h>
 #include "arc4.h"
 #include "socket.h"
-#include "fprintf_personalizados.h"
 #define TODO_OK 0
 #define ERROR -1
 #define ERROR_ENTRADA "Parametros Incorrectos"
@@ -41,12 +40,13 @@ unsigned char* clave, char* nombre_archivo) {
 		return ERROR;
 	}
 
-	unsigned char chunk[SIZEOF_CHUNK + 1];
-	
+	unsigned char chunk[SIZEOF_CHUNK];
 	bool es_socket_valido = true;
+	arc4_t arc4_;
+	arc4_create(&arc4_);
 	
 	while (es_socket_valido) {
-		size_t bytes_leidos = fread(chunk, TAMANIO_BYTE, SIZEOF_CHUNK, archivo); 
+		size_t bytes_leidos = fread(chunk, TAMANIO_BYTE, SIZEOF_CHUNK, archivo);
 		int largo_util_chunk;
 		if (bytes_leidos < SIZEOF_CHUNK) {
 			largo_util_chunk = bytes_leidos;
@@ -54,22 +54,21 @@ unsigned char* clave, char* nombre_archivo) {
 			largo_util_chunk = SIZEOF_CHUNK;
 		} 
 		
-		chunk[largo_util_chunk] = '\0';
-		arc4_t arc4_;
-		arc4_create(&arc4_, largo_util_chunk + 1);
+		unsigned char output[largo_util_chunk];
+		unsigned char key_stream[largo_util_chunk];
 		
-		arc4_process(clave, chunk, largo_util_chunk + 1, &arc4_);
+		arc4_process(clave, chunk, largo_util_chunk, output, key_stream, &arc4_);
 		
-		unsigned char* crypted_output = arc4_get_output(&arc4_);
-		unsigned char* key_stream = arc4_get_key_stream(&arc4_);
-		fprintf_hexadecimal_stdout((const char*) crypted_output, 
-		largo_util_chunk + 1);
-		fprintf_hexadecimal_stderr((const char*) key_stream, 
-		largo_util_chunk + 1);
+		for (int i = 0; i < largo_util_chunk; i++){		
+			fprintf(stderr, "%02X", key_stream[i]);
+		}
 		
-		int s = socket_send(&socket, crypted_output, largo_util_chunk);
+		for (int i = 0; i < largo_util_chunk; i++){		
+			fprintf(stdout, "%02x", output[i]);
+		}
 		
-		arc4_destroy(&arc4_);
+		
+		int s = socket_send(&socket, output, largo_util_chunk);
 		
 		es_socket_valido = (s == 0);
 		if (!es_socket_valido) {
@@ -80,6 +79,7 @@ unsigned char* clave, char* nombre_archivo) {
 		}
 	}
 	
+	arc4_destroy(&arc4_);
 	socket_shutdown_rw(&socket);
 	socket_destroy(&socket);
 	if (archivo != stdin) {
