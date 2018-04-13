@@ -43,7 +43,7 @@ unsigned char* clave, char* nombre_archivo) {
 	unsigned char chunk[SIZEOF_CHUNK];
 	bool es_socket_valido = true;
 	arc4_t arc4_;
-	arc4_create(&arc4_);
+	arc4_create(&arc4_, clave, (unsigned int) strlen((const char*)clave));
 	
 	while (es_socket_valido) {
 		size_t bytes_leidos = fread(chunk, TAMANIO_BYTE, SIZEOF_CHUNK, archivo);
@@ -57,7 +57,7 @@ unsigned char* clave, char* nombre_archivo) {
 		unsigned char output[largo_util_chunk];
 		unsigned char key_stream[largo_util_chunk];
 		
-		arc4_process(clave, chunk, largo_util_chunk, output, key_stream, &arc4_);
+		arc4_process(chunk, largo_util_chunk, output, key_stream, &arc4_);
 		
 		for (int i = 0; i < largo_util_chunk; i++) {		
 			fprintf(stderr, "%02X", key_stream[i]);
