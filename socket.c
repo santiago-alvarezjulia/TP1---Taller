@@ -118,7 +118,7 @@ size_t sizeof_chunk) {
 	while(bytes_recibidos < sizeof_chunk && es_socket_valido 
 	&& es_socket_abierto) {
 		s = recv(socket_->socket, &chunk[bytes_recibidos], 
-		sizeof_chunk - bytes_recibidos, MSG_NOSIGNAL);
+		sizeof_chunk - bytes_recibidos, 0);
 		if (s < 0) {
 			es_socket_valido = false;
 		} else if (s == 0) {

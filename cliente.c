@@ -53,20 +53,19 @@ unsigned char* clave, char* nombre_archivo) {
 		} else {
 			largo_util_chunk = SIZEOF_CHUNK;
 		} 
-		
+
 		unsigned char output[largo_util_chunk];
 		unsigned char key_stream[largo_util_chunk];
 		
 		arc4_process(clave, chunk, largo_util_chunk, output, key_stream, &arc4_);
 		
-		for (int i = 0; i < largo_util_chunk; i++){		
+		for (int i = 0; i < largo_util_chunk; i++) {		
 			fprintf(stderr, "%02X", key_stream[i]);
 		}
 		
-		for (int i = 0; i < largo_util_chunk; i++){		
+		for (int i = 0; i < largo_util_chunk; i++) {		
 			fprintf(stdout, "%02x", output[i]);
 		}
-		
 		
 		int s = socket_send(&socket, output, largo_util_chunk);
 		
@@ -74,7 +73,7 @@ unsigned char* clave, char* nombre_archivo) {
 		if (!es_socket_valido) {
 			break;
 		}
-		if (largo_util_chunk < SIZEOF_CHUNK) {
+		if (feof(archivo)) {
 			break;
 		}
 	}

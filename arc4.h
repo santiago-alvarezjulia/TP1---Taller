@@ -4,15 +4,12 @@
 #include <stddef.h>
 
 typedef struct {
-	//unsigned char* output;
-	//unsigned char* key_stream;
 	unsigned char* state_array;
 	size_t i;
 	size_t j;
 }arc4_t;
 
 // algoritmo de cifrado
-// post: unsigned char* almacenado en el heap
 void arc4_create(arc4_t* arc4_);
 void arc4_destroy(arc4_t* arc4_);
 void arc4_process(unsigned char* clave, unsigned char* input, 

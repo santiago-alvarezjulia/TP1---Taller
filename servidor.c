@@ -60,7 +60,7 @@ int servidor(const char* service_name, unsigned char* clave) {
 		} else {
 			largo_util_chunk = SIZEOF_CHUNK;
 		} 
-		
+
 		unsigned char output[largo_util_chunk];
 		unsigned char key_stream[largo_util_chunk];
 		
