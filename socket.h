@@ -23,7 +23,7 @@ int socket_receive(socket_t* socket_, unsigned char* chunk,
 size_t sizeof_chunk);
 
 int socket_bind_and_listen(socket_t* socket, const char* port);
-int socket_accept(socket_t* socket_viejo, socket_t* socket_nuevo);
+int socket_accept(socket_t* socket_, socket_t* new_socket);
 void socket_shutdown_rw(socket_t* socket);
 void socket_destroy(socket_t* socket_);
 

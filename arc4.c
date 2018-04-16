@@ -13,7 +13,7 @@ void swap_(unsigned int k, unsigned int l, arc4_t* arc4_) {
 }
 
 
-unsigned char gen_pseudoaleatoria(arc4_t* arc4_) {
+unsigned char gen_pseudorandom(arc4_t* arc4_) {
 	arc4_->i = (arc4_->i + 1) % BYTES;
 	arc4_->j = (arc4_->j + arc4_->state_array[arc4_->i]) % BYTES;
 	swap_(arc4_->i, arc4_->j, arc4_);
@@ -43,13 +43,12 @@ void arc4_destroy(arc4_t* arc4_) {
 }
 	
 	
-void arc4_process(unsigned char* input, size_t largo_util_input, 
+void arc4_process(unsigned char* input, size_t len_input, 
 unsigned char* output, unsigned char* key_stream, arc4_t* arc4_) {
 	/* lleno output y key_stream*/
-	for (size_t k = 0; k < largo_util_input; k++) {
-		unsigned char char_pseudoaleatorio = 
-		gen_pseudoaleatoria(arc4_);
-		output[k] = input[k] ^ char_pseudoaleatorio;
-		key_stream[k] = char_pseudoaleatorio;
+	for (size_t k = 0; k < len_input; k++) {
+		unsigned char char_pseudorandom = gen_pseudorandom(arc4_);
+		output[k] = input[k] ^ char_pseudorandom;
+		key_stream[k] = char_pseudorandom;
 	}
 }

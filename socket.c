@@ -4,17 +4,13 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <errno.h>
-#include <sys/types.h>
 #include <sys/socket.h>
-#include <netdb.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
-#include <strings.h>
 #include <unistd.h>
 #include "socket.h"
-#define TODO_OK 0
+#define OK 0
 #define ERROR -1
-#define CLIENTES_ESPERANDO_MAX 5
+#define MAX_CLIENTS_WAITING 5
 
 
 int socket_create(socket_t* socket_) {
@@ -24,46 +20,45 @@ int socket_create(socket_t* socket_) {
 		return ERROR;
 	}
 	socket_->socket = sock;
-    return TODO_OK;
+    return OK;
 }
 
 
 int socket_connect(socket_t* socket_, const char* hostname, const char* port) {
-	struct sockaddr_in cliente;  
+	struct sockaddr_in client;  
 
-	cliente.sin_family = AF_INET;
-	cliente.sin_port = htons((uint16_t)atoi(port)); 
-	cliente.sin_addr.s_addr = inet_addr(hostname);  
+	client.sin_family = AF_INET;
+	client.sin_port = htons((uint16_t)atoi(port)); 
+	client.sin_addr.s_addr = inet_addr(hostname);  
 	
-	if (connect(socket_->socket, 
-	(struct sockaddr *)&cliente, sizeof(cliente)) < 0) {
+	if (connect(socket_->socket, (struct sockaddr *)&client, 
+	sizeof(client)) < 0) {
 		fprintf(stderr, "Error: %s\n", strerror(errno));
 		return ERROR;
 	}
-    return TODO_OK;
+    return OK;
 }
 
 
 int socket_send(socket_t* socket_, unsigned char* chunk, size_t sizeof_chunk) {
 	int bytes_enviados = 0;
 	int s;
-	bool es_socket_valido = true;
-	bool es_socket_abierto = true;
+	bool is_valid_socket = true;
+	bool is_open_socket = true;
 	
-	while(bytes_enviados < sizeof_chunk && es_socket_valido && 
-	es_socket_abierto) {
+	while(bytes_enviados < sizeof_chunk && is_valid_socket && is_open_socket) {
 		s = send(socket_->socket, &chunk[bytes_enviados], 
 		sizeof_chunk - bytes_enviados, MSG_NOSIGNAL);
 		if (s < 0) {
-			es_socket_valido = false;
+			is_valid_socket = false;
 		} else if (s == 0) {
-			es_socket_abierto = false;
+			is_open_socket = false;
 		} else {
 			bytes_enviados += s;
 		}
 	}	
-	if (es_socket_valido) {
-		return TODO_OK;
+	if (is_valid_socket) {
+		return OK;
 	}
 	return ERROR;
 }
@@ -90,21 +85,21 @@ int socket_bind_and_listen(socket_t* socket_, const char* port) {
 	}
 	freeaddrinfo(result);
 	
-	s = listen(socket_->socket, CLIENTES_ESPERANDO_MAX);
+	s = listen(socket_->socket, MAX_CLIENTS_WAITING);
 	if (s == -1) {
 		fprintf(stderr,"Error : %s\n", strerror(errno));
 		return ERROR;
 	}
-	return TODO_OK;
+	return OK;
 }
 
-int socket_accept(socket_t* socket_viejo, socket_t* socket_nuevo){
-	int s = accept(socket_viejo->socket, NULL, NULL);
+int socket_accept(socket_t* socket_, socket_t* new_socket){
+	int s = accept(socket_->socket, NULL, NULL);
 	if (s < 0) {
 		return ERROR;
 	}
-	socket_nuevo->socket = s;
-	return TODO_OK;
+	new_socket->socket = s;
+	return OK;
 }
 
 
@@ -112,23 +107,22 @@ int socket_receive(socket_t* socket_, unsigned char* chunk,
 size_t sizeof_chunk) {
 	int bytes_recibidos = 0;
 	int s;
-	bool es_socket_abierto = true;
-	bool es_socket_valido = true;
+	bool is_open_socket = true;
+	bool is_valid_socket = true;
 	
-	while(bytes_recibidos < sizeof_chunk && es_socket_valido 
-	&& es_socket_abierto) {
+	while(bytes_recibidos < sizeof_chunk && is_valid_socket && is_open_socket) {
 		s = recv(socket_->socket, &chunk[bytes_recibidos], 
 		sizeof_chunk - bytes_recibidos, 0);
 		if (s < 0) {
-			es_socket_valido = false;
+			is_valid_socket = false;
 		} else if (s == 0) {
-			es_socket_abierto = false;
+			is_open_socket = false;
 		} else {	
 			bytes_recibidos += s;
 		}
 	}	
 		
-	if (!es_socket_abierto && es_socket_valido) {
+	if (!is_open_socket && is_valid_socket) {
 		return bytes_recibidos;
 	}
 	return ERROR;
